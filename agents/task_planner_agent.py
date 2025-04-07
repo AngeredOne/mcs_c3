@@ -5,7 +5,6 @@ from core.task import Task
 from core.scenario_dynamic import Scenario, ScenarioStep
 import uuid
 
-
 class TaskPlannerAgent(Agent):
     def __init__(self):
         super().__init__(name="task_planner_agent")
@@ -19,7 +18,7 @@ class TaskPlannerAgent(Agent):
         start_step = None
 
         if "refactor" in description or "extract" in description:
-            # Сначала прочитать файл
+            # Шаг 1: Чтение файла
             read_step = f"read_{uuid.uuid4().hex}"
             steps[read_step] = ScenarioStep(
                 name=read_step,
@@ -29,7 +28,7 @@ class TaskPlannerAgent(Agent):
             )
             start_step = read_step
 
-            # Затем предложить изменение
+            # Шаг 2: Разработка изменения
             dev_step = f"develop_{uuid.uuid4().hex}"
             steps[dev_step] = ScenarioStep(
                 name=dev_step,
@@ -39,7 +38,7 @@ class TaskPlannerAgent(Agent):
             )
             steps[read_step].next_step_on_success = dev_step
 
-            # Затем построить дифф
+            # Шаг 3: Создание диффа
             diff_step = f"diff_{uuid.uuid4().hex}"
             steps[diff_step] = ScenarioStep(
                 name=diff_step,
@@ -49,7 +48,7 @@ class TaskPlannerAgent(Agent):
             )
             steps[dev_step].next_step_on_success = diff_step
 
-            # Затем запросить валидацию
+            # Шаг 4: Валидация изменений
             validate_step = f"validate_{uuid.uuid4().hex}"
             steps[validate_step] = ScenarioStep(
                 name=validate_step,
@@ -59,7 +58,7 @@ class TaskPlannerAgent(Agent):
             )
             steps[diff_step].next_step_on_success = validate_step
 
-            # Затем применить изменение
+            # Шаг 5: Применение изменений
             apply_step = f"apply_{uuid.uuid4().hex}"
             steps[apply_step] = ScenarioStep(
                 name=apply_step,
@@ -68,18 +67,17 @@ class TaskPlannerAgent(Agent):
                 next_step_on_success=None
             )
             steps[validate_step].next_step_on_success = apply_step
-
         else:
             raise ValueError("Planner does not know how to handle this type of task yet.")
 
-        # Создаём динамический сценарий
+        # Создание динамического сценария
         scenario = Scenario(
             name=f"dynamic_{uuid.uuid4().hex}",
             steps=steps,
             start_step=start_step
         )
 
-        # Регистрируем динамический сценарий на лету
+        # Регистрация сценария на лету
         self.app.register_scenario(scenario)
 
         return {"scenario_name": scenario.name}

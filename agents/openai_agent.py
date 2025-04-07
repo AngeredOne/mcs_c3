@@ -1,9 +1,11 @@
 # agents/openai_agent.py
+import openai
 
 from core.agent import Agent
 from core.task import Task
 from core.llm_agent_interface import ExtendedLLMAgentInterface
-import openai
+from openai import OpenAI
+
 import os
 
 
@@ -14,17 +16,15 @@ class OpenAIAgent(Agent, ExtendedLLMAgentInterface):
         self.model = model
         self.temperature = temperature
         self.api_key = os.getenv("OPENAI_API_KEY")
-        openai.api_key = self.api_key
+        self.client = OpenAI(api_key=self.api_key)
 
     def generate_response(self, prompt: str) -> str:
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY environment variable not set.")
 
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature
-        )
+        response = self.client.chat.completions.create(model=self.model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=self.temperature)
         return response.choices[0].message.content.strip()
 
     def chat(self, system_prompt: str, messages: list, temperature: float = 0.7) -> str:
@@ -33,11 +33,9 @@ class OpenAIAgent(Agent, ExtendedLLMAgentInterface):
 
         full_messages = [{"role": "system", "content": system_prompt}] + messages
 
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=full_messages,
-            temperature=temperature
-        )
+        response = self.client.chat.completions.create(model=self.model,
+        messages=full_messages,
+        temperature=temperature)
         return response.choices[0].message.content.strip()
 
     def handle_task(self, task: Task):

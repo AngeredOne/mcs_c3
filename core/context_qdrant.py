@@ -1,5 +1,6 @@
 # core/context_qdrant.py
 
+import uuid
 from typing import List, Tuple
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance
@@ -20,10 +21,12 @@ class QdrantVectorStore(ContextStorage):
 
     def add(self, text: str, metadata: dict) -> None:
         embedding = self.model.encode(text).tolist()
+        # Генерируем уникальный идентификатор для точки
+        point_id = str(uuid.uuid4())
         self.client.upsert(
             collection_name=self.collection_name,
             points=[{
-                "id": None,
+                "id": point_id,
                 "vector": embedding,
                 "payload": {"text": text, "metadata": metadata}
             }]

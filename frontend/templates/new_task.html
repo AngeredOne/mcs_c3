@@ -1,3 +1,4 @@
+<!-- frontend/templates/new_task.html -->
 {% extends "base.html" %}
 
 {% block content %}
@@ -7,6 +8,14 @@
         <div>
             <label for="description" class="block font-semibold">Описание задачи:</label>
             <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded" required></textarea>
+        </div>
+        <div>
+            <label for="task_type" class="block font-semibold">Тип задачи:</label>
+            <select id="task_type" name="task_type" class="w-full p-2 border rounded">
+                <option value="simple">Обычная задача</option>
+                <option value="improvement">Улучшение системы</option>
+                <option value="scenario">Генерация сценария</option>
+            </select>
         </div>
 
         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">

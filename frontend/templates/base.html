@@ -1,5 +1,4 @@
 <!-- frontend/templates/base.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,17 @@
     <link href="/static/css/tailwind.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-screen">
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold"><a href="/ui">MAS UI</a></h1>
+            <nav>
+                <a href="/ui/new_task" class="mx-2 text-blue-600 hover:underline">Новая задача</a>
+                <a href="/ui/sessions" class="mx-2 text-blue-600 hover:underline">Сессии</a>
+                <a href="/ui/improvement" class="mx-2 text-blue-600 hover:underline">Улучшение системы</a>
+                <a href="/ui/scenario" class="mx-2 text-blue-600 hover:underline">Генерация сценария</a>
+            </nav>
+        </div>
+    </header>
     <div class="container mx-auto p-4">
         {% block content %}{% endblock %}
     </div>

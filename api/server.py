@@ -4,6 +4,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from agents.openai_agent import OpenAIAgent
+from agents.internal_improvement_agent import InternalImprovementAgent
+from agents.scenario_generator_agent import ScenarioGeneratorAgent  # Новый агент
 from core.app import CoreApp
 from core.task import Task
 
@@ -57,6 +59,8 @@ core_app.register_agent(LoggerAgent())
 core_app.register_agent(FilesystemAgent())
 core_app.register_agent(ValidationAgent())
 core_app.register_agent(InnerDeveloperAgent())
+core_app.register_agent(InternalImprovementAgent())
+core_app.register_agent(ScenarioGeneratorAgent())  # Регистрация нового агента
 
 # Создание сессии
 core_app.create_session("default")
@@ -81,7 +85,6 @@ core_app.register_chain(ProcessingChain(
         "filesystem_agent"
     ]
 ))
-
 
 # Базовый сценарий
 steps = {
@@ -177,3 +180,12 @@ def post_scenario_task(session_id: str, request: ScenarioTaskRequest):
     task = Task(description=request.description, parameters=request.parameters)
     result = core_app.execute_scenario(request.scenario_name, session_id, task)
     return result
+
+# Новый эндпоинт для задач на улучшение системы
+@app.post("/sessions/{session_id}/improvement_task")
+def post_improvement_task(session_id: str, task_request: TaskRequest):
+    if session_id not in core_app.sessions:
+        core_app.create_session(session_id)
+    task = Task(description=task_request.description, parameters=task_request.parameters)
+    result = core_app.delegate_task(session_id, "internal_improvement_agent", task)
+    return {"result": result}

@@ -1,7 +1,7 @@
 # core/app.py
-
 import importlib
 import inspect
+import logging
 from typing import Dict, Any, List
 from core.command import Command
 from core.agent import Agent
@@ -10,6 +10,7 @@ from core.task import Task
 from core.chain import ProcessingChain
 from core.context_qdrant import QdrantVectorStore
 from core.scenario_dynamic import Scenario, ScenarioExecutor
+
 
 class CoreApp:
     def __init__(self):
@@ -20,22 +21,29 @@ class CoreApp:
         self.context = QdrantVectorStore()
         self.scenarios: Dict[str, Scenario] = {}
 
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("CoreApp инициализирована.")
+
     def register_command(self, command: Command):
         if command.name in self.commands:
             raise ValueError(f"Command '{command.name}' already registered.")
         self.commands[command.name] = command
+        self.logger.info(f"Команда зарегистрирована: {command.name}")
 
     def register_agent(self, agent: Agent):
         if agent.name in self.agents:
             raise ValueError(f"Agent '{agent.name}' already registered.")
         agent.bind_app(self)
         self.agents[agent.name] = agent
+        self.logger.info(f"Агент зарегистрирован: {agent.name} с ролью {agent.role}")
 
     def create_session(self, session_id: str) -> Session:
         if session_id in self.sessions:
             raise ValueError(f"Session '{session_id}' already exists.")
         session = Session(session_id)
         self.sessions[session_id] = session
+        self.logger.info(f"Создана сессия: {session_id}")
         return session
 
     def get_session(self, session_id: str) -> Session:
@@ -47,6 +55,7 @@ class CoreApp:
         if name not in self.commands:
             raise ValueError(f"Command '{name}' not found.")
         command = self.commands[name]
+        self.logger.info(f"Выполняется команда: {name} с параметрами {kwargs}")
         return command.execute(**kwargs)
 
     def delegate_task(self, session_id: str, agent_name: str, task: Task) -> Any:
@@ -56,9 +65,21 @@ class CoreApp:
             raise ValueError(f"Session '{session_id}' not found.")
         agent = self.agents[agent_name]
         session = self.sessions[session_id]
+        self.logger.info(f"Делегирование задачи {task.task_id} агенту {agent_name} в сессии {session_id}")
         result = agent.handle_task(task)
         task.set_result(result)
         session.add_task(task)
+        self.logger.info(f"Задача {task.task_id} выполнена, результат: {result}")
+
+        # Сохраняем контекст задачи в Qdrant
+        context_data = {
+            "task_id": task.task_id,
+            "description": task.description,
+            "result": str(result)
+        }
+        self.context.add(text=task.description, metadata=context_data)
+        self.logger.info(f"Контекст задачи {task.task_id} сохранён.")
+
         return result
 
     def list_commands(self) -> Dict[str, str]:

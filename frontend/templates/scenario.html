@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="text-2xl font-bold mb-4">Генерация сценария</h1>
+
+    <form action="/ui/scenario" method="post" class="space-y-4">
+        <div>
+            <label for="description" class="block font-semibold">Описание задачи для генерации сценария:</label>
+            <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded" required></textarea>
+        </div>
+
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            🚀 Сгенерировать сценарий
+        </button>
+    </form>
+
+    <div class="mt-4">
+        <a href="/ui" class="text-blue-600 hover:underline">⬅️ Вернуться на главную</a>
+    </div>
+{% endblock %}
